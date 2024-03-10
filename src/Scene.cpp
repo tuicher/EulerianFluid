@@ -5,11 +5,11 @@
 
 namespace asa
 {
-int Scene::testcase = Scene::TEST_ADVECTION;
+int Scene::testcase = Scene::TEST_WINDMAP;
 bool Scene::pauseFlag = true;
 uint Scene::nCellsX = 512;
 uint Scene::nCellsY = 512;
-float Scene::step = 0.002f;
+float Scene::step = 0.01f;
 float Scene::kDensity =1.0f;
 float Scene::kGravity = -1.0f;
 float Scene::kViscosity = 0.001f;

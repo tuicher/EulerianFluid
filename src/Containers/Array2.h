@@ -39,7 +39,11 @@ public:
 
     const T *getData() const { return ptr; }
 
-    uint getLinearIndex(const uint i, const uint j) const { return j * size.x + i; }
+    // Creamos la funcion max y min para poder usarla en la funcion getLinearIndex
+    inline const uint min(const uint a, const uint b) const { return a < b ? a : b; }
+    inline const uint max(const uint a, const uint b) const { return a > b ? a : b; }
+    // Version de getLinearIndex modificada para que no se salga del array clampeando al borde
+    uint getLinearIndex(const uint i, const uint j) const { return min(size.x * size.y, max(0, j * size.x + i)); }
 
     bool resize(const Index2 &size_)
     {
