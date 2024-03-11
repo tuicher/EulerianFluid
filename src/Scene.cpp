@@ -9,7 +9,7 @@ int Scene::testcase = Scene::TEST_WINDMAP;
 bool Scene::pauseFlag = true;
 uint Scene::nCellsX = 512;
 uint Scene::nCellsY = 512;
-float Scene::step = 0.01f;
+float Scene::step = 0.005f;
 float Scene::kDensity =1.0f;
 float Scene::kGravity = -1.0f;
 float Scene::kViscosity = 0.001f;
@@ -105,8 +105,8 @@ void Scene::initAnimation()
             Array2<Vector3> &inkRGB = fluid->inkRGB;
             uint sizeX = inkRGB.getSize().x;
             uint sizeY = inkRGB.getSize().y;
-            uint cubeSizeX = sizeX / 2;
-            uint cubeSizeY = sizeY / 2;
+            uint cubeSizeX = sizeX / 3;
+            uint cubeSizeY = sizeY / 3;
 
             // Colocar cubos en las esquinas
             for (uint i = 0; i < cubeSizeX; ++i) {
