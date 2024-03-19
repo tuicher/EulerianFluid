@@ -52,7 +52,7 @@ public:
     // Version de getLinearIndex modificada para que no se salga del array clampeando al borde
     inline const uint getLinearIndex(const uint i, const uint j) const { return min( size.x * size.y, max( 0, j * size.x + i)); }
     #else
-    // Version de getLinearIndex modificada para que no se salga del array repitiendo el borde
+    // Version de getLinearIndex modificada para que no se salga del array 
     inline const uint getLinearIndex(const uint i, const uint j) const { return (j * size.x + i) % (size.x * size.y); }
     #endif
 
