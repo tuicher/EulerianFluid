@@ -396,8 +396,11 @@ void Fluid2::fluidEmission()
 
         float velmag = std::sin(angleB) * 10;
 
-        float velX = std::cos(angle) * velmag;
-        float velY = std::sin(angle) * velmag;
+        //float velX = std::cos(angle) * velmag;
+        //float velY = std::sin(angle) * velmag;
+
+        float velX = 1.0f * velmag;
+        float velY = 0.0f;
 
         Vector3 color = calculateTimeBasedColor(time);
 
