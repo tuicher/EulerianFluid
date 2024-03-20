@@ -4,7 +4,7 @@
 </div>
 
 <div align="center">
-<img src="https://github.com/tuicher/EulerianFluid/assets/26395726/68ad3ed5-8db1-44de-8d48-8796c7ac309d" width="400">
+<img src="https://github.com/tuicher/EulerianFluid/assets/26395726/a5c52a48-2b7e-4396-9267-ec8d147a61c6" width="400">
 </div>
 
 <div align="center">
