@@ -1,4 +1,16 @@
-![Fast Smoke dot](https://github.com/tuicher/EulerianFluid/assets/26395726/777b88ce-f69b-4f6c-b177-c4815640e7d8)
+# Eulerian Fluid
+<div align="center">
+<img src="https://github.com/tuicher/EulerianFluid/assets/26395726/9c171e66-be9e-4e1a-a529-cede93fbcfb8" width="400">
+</div>
 
-![Big Smoke dot](https://github.com/tuicher/EulerianFluid/assets/26395726/83f94e34-860b-458e-a5ed-95ec1085f496)
+<div align="center">
+<img src="https://github.com/tuicher/EulerianFluid/assets/26395726/68ad3ed5-8db1-44de-8d48-8796c7ac309d" width="400">
+</div>
 
+<div align="center">
+<img src="https://github.com/tuicher/EulerianFluid/assets/26395726/3c96b56e-e85c-45d9-b889-6008975642da" width="400">
+</div>
+
+<div align="center">
+<img src="https://github.com/tuicher/EulerianFluid/assets/26395726/e7c9c904-34c6-44ca-b14a-a1f2ed35be26" width="400">
+</div>
