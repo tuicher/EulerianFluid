@@ -27,32 +27,32 @@ struct Emitter
 
 const uint NUM_SUBSTEPS = 10;
 const double EPSILON = 1e-6;
-/*
 const Emitter emitters[4] = {
     {Vector2(0.1, 0.1), Vector2(0.05f, 0.05f), Vector2(1.0f, 1.0f), 3.0f, Vector3(1.0f, 0.0f, 0.0f)},
     {Vector2(0.9, 0.9), Vector2(0.05f, 0.05f), Vector2(-1.0f, -1.0f), 3.0f, Vector3(0.0f, 1.0f, 0.0f)},
     {Vector2(0.9, 0.1), Vector2(0.05f, 0.05f), Vector2(-1.0f, 1.0f), 3.0f, Vector3(0.0f, 0.0f, 1.0f)},
     {Vector2(0.1, 0.9), Vector2(0.05f, 0.05f), Vector2(1.0f, -1.0f), 3.0f, Vector3(1.0f, 1.0f, 0.0f)}
 };
-*/
 /*
 const Emitter emitters[1] = {
     {Vector2(0.5, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0f, 1.0f), 2.0f, Vector3(0.8f, 0.8f, 0.8f)}
 };
 */
-const Emitter emitters[3] = {
-    {Vector2(0.25, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0f, 1.0f), 7.0f, Vector3(1.0f, 1.0f, 0.0f)},
-    {Vector2(0.5, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0f, 1.0f), 7.0f, Vector3(0.0f, 1.0f, 1.0f)},
-    {Vector2(0.75, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0f, 1.0f), 7.0f, Vector3(1.0f, 0.0f, 1.0f)}
-};
 /*
-const Emitter emitters[4] = {
-    {Vector2(0.25, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0, 1.0f), 1.0f, Vector3(1.0f, 0.0f, 0.0f)},
-    {Vector2(0.75, 0.9), Vector2(0.05f, 0.05f), Vector2(0.0, -1.0f), 1.0f, Vector3(0.0f, 1.0f, 0.0f)},
-    {Vector2(0.75, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0, 1.0f), 1.0f, Vector3(0.0f, 0.0f, 1.0f)},
-    {Vector2(0.25, 0.9), Vector2(0.05f, 0.05f), Vector2(0.0f, -1.0f), 1.0f, Vector3(1.0f, 1.0f, 0.0f)}};
+const Emitter emitters[3] = {
+    {Vector2(0.25, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0f, 1.0f), 3.0f, Vector3(1.0f, 1.0f, 0.0f)},
+    {Vector2(0.5, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0f, 1.0f), 3.0f, Vector3(0.0f, 1.0f, 1.0f)},
+    {Vector2(0.75, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0f, 1.0f), 3.0f, Vector3(1.0f, 0.0f, 1.0f)}
+};
 
+
+const Emitter emitters[4] = {
+    {Vector2(0.25, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0, 1.0f), 2.0f, Vector3(1.0f, 0.0f, 0.0f)},
+    {Vector2(0.75, 0.9), Vector2(0.05f, 0.05f), Vector2(0.0, -1.0f), 2.0f, Vector3(0.0f, 1.0f, 0.0f)},
+    {Vector2(0.75, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0, 1.0f), 2.0f, Vector3(0.0f, 0.0f, 1.0f)},
+    {Vector2(0.25, 0.9), Vector2(0.05f, 0.05f), Vector2(0.0f, -1.0f), 2.0f, Vector3(1.0f, 1.0f, 0.0f)}};
 */
+
 const Vector2 gDir = Vector2(0, 1);
 
 template <typename T>
@@ -329,10 +329,14 @@ void Fluid2::fluidAdvection(const float dt)
 
 double time = 0.0;
 Vector3 colors[] = {
-    Vector3(1.0f, 1.0f, 0.0f),  // Rojo
-    Vector3(0.0f, 1.0f, 1.0f),  // Verde
-    Vector3(1.0f, 0.0f, 1.0f),  // Azul
-    Vector3(1.0f, 1.0f, 0.0f)   //(para volver al inicio)
+    Vector3(1.0f, 1.0f, 0.5f),  
+    Vector3(0.8f, 0.2f, 0.7f),  
+    Vector3(1.0f, 0.7f, 1.0f),
+    Vector3(0.2f, 1.0f, 0.9f),
+    Vector3(0.8f, 1.0f, 0.2f),
+    Vector3(0.4f, 0.9f, 1.0f),
+    Vector3(1.0f, 1.0f, 1.0f),
+    Vector3(1.0f, 1.0f, 0.5f)   //(para volver al inicio)
 };
 
 Vector3 calculateTimeBasedColor(double time)
@@ -384,11 +388,13 @@ void Fluid2::fluidEmission()
         float pos = 0.5f;
         float size = 0.05f;
 
-        float angle = std::fmod(time * 2, 2 * M_PI);
+        float angle = std::fmod(time * 0.5f, 2 * M_PI);
 
         float angleB = std::fmod(time * 16, 2 * M_PI);
 
-        float velmag = (std::sin(angleB) + 1) * 5;
+        //float velmag = (std::sin(angleB) + 1) * 5;
+
+        float velmag = std::sin(angleB) * 10;
 
         float velX = std::cos(angle) * velmag;
         float velY = std::sin(angle) * velmag;
@@ -438,49 +444,6 @@ void Fluid2::fluidVolumeForces(const float dt)
 				velocityY[index] = vel;
 			}
 		}
-
-        /*
-        #pragma omp parallel for collapse(2)
-        for (int j = 0; j < grid.getSize().y; ++j)
-        {
-            for (int i = 0; i < grid.getSize().x; ++i)
-            {
-				Index2 index = Index2(i, j);
-				Vector2 vel = Vector2(velocityX[index], velocityY[index]);
-
-				// Gravity
-                vel+= gDir * gravity * dt;
-
-				velocityX[index] = vel.x;
-				velocityY[index] = vel.y;
-			}
-		}
-
-       
-
-        // Faltaría aplicar la fuerza en las posiciones velX[velX.x -1, j] y velY[i, velY.y -1]
-        
-        #pragma omp parallel for
-        for (int j = 0; j < velocityX.getSize().y; ++j) 
-        {           
-            Index2 index = Index2(velocityX.getSize().x - 1, j);
-            float vel = velocityX[index];
-
-            vel = vel + gDir.x * gravity * dt;
-
-            velocityX[index] = vel;
-		}
-
-        #pragma omp parallel for
-        for (int i = 0; i < velocityY.getSize().x; ++i) {
-			Index2 index = Index2(i, velocityY.getSize().y - 1);
-			float vel = velocityY[index];
-
-			vel = vel + gDir.y * gravity * dt;
-
-			velocityY[index] = vel;
-        }
-        */
     }
     
 }
@@ -544,18 +507,15 @@ void Fluid2::fluidPressureProjection(const float dt)
 {
     
     if (Scene::testcase >= Scene::SMOKE) 
-    //if (false) 
     {
         // Precalculate some constants
+
         const float rho = Scene::kDensity;
         const float mu = Scene::kViscosity;
         const float dx = grid.getDx().x;
         const float dy = grid.getDx().y;
         const float dx2 = dx * dx;
         const float dy2 = dy * dy;
-
-        const double alpha = rho / (dt * dx * dy);
-        const double beta = (1.0 / dx2) + (1.0 / dy2);
 
         const int nX = pressure.getSize().x;
         const int nY = pressure.getSize().y;
@@ -601,60 +561,10 @@ void Fluid2::fluidPressureProjection(const float dt)
                 double v = (velocityY[Index2(i, j + 1)] - velocityY[Index2(i, j)]) / dy;
                 
                 b[idx] = (-rho / dt) * (u + v);
-                //b[idx] = -alpha + (u + v);
             }
         }
 
         // Rellenamos la matriz A
-/*
-        #pragma omp parallel for collapse(2)
-        for (int j = 0; j < nY; ++j) {
-            for (int i = 0; i < nX; ++i) {
-				// indice Lineal de A
-                int idx = i + j * nX;
-
-                double value = 2.0/ dx2 + 2.0 / dy2;
-
-                if (i == 0) 
-                {
-                    value -= 1.0 / dx2;
-                } 
-                else
-                {
-					A.add_to_element(idx, idx - 1, -1.0 / dx2);
-				}
-
-                if (i == nX - 1)
-                {
-					value -= 1.0 / dx2;
-				} 
-				else {
-                    A.add_to_element(idx, idx + 1, -1.0 / dx2);
-                }
-
-                if (j == 0)
-                {
-					value -= 1.0 / dy2;
-				} 
-                else
-                {
-					A.add_to_element(idx, idx - nX, -1.0 / dy2);
-				}
-
-                if (j == nY - 1)
-                {
-					value -= 1.0 / dy2;
-				} 
-                else
-                {
-					A.add_to_element(idx, idx + nX, -1.0 / dy2);
-				}
-
-				A.set_element(idx, idx, value);
-			}
-		}
-  */     
-
         #pragma omp parallel for collapse(2)
         for (int j = 0; j < nY; ++j) {
             for (int i = 0; i < nX; ++i) {
@@ -696,7 +606,6 @@ void Fluid2::fluidPressureProjection(const float dt)
         PCG.set_solver_parameters(1e-4, 100);
         
 
-        // PCG.solve(A. rhs, p, residual, iterations);
         double residual = 1e-4;
         int iterations = 100;
         PCG.solve(A, b, x, residual, iterations);
@@ -711,13 +620,10 @@ void Fluid2::fluidPressureProjection(const float dt)
                 pressure[Index2(i, j)] = x[idx];
             }
         }
-
-        // Aplicmamos los gradientes de presi?n para corregir todas las velocidades X e Y
-        
+        // Aplicamos el gradiente de presión
         #pragma omp parallel for collapse(2)
         for (int j = 0; j < grid.getSize().y; ++j) {
             for (int i = 0; i < grid.getSize().x; ++i) {
-				// Aplicamos el gradiente de presión
 				velocityX[Index2(i + 1, j)] -= (dt / rho) * ((pressure[Index2(i + 1, j)] - pressure[Index2(i, j)]) / dx);
 				velocityY[Index2(i, j + 1)] -= (dt / rho) * ((pressure[Index2(i, j + 1)] - pressure[Index2(i, j)]) / dy);
 			}
