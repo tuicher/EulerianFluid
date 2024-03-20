@@ -20,32 +20,32 @@ struct Emitter
     Vector3 color;
 };
 
-//#define RGB_PATTERN
+#define RGB_PATTERN
 
-//#define SUB_STEPS
+#define SUB_STEPS
 //#define RUNGE_KUTTA_4
 
 const uint NUM_SUBSTEPS = 10;
+const double EPSILON = 1e-6;
 
-/*
 const Emitter emitters[4] = {
-    {Vector2(0.1, 0.1), Vector2(0.05f, 0.05f), Vector2(1.0f, 1.0f), 2.0f, Vector3(1.0f, 0.0f, 0.0f)},
-    {Vector2(0.9, 0.9), Vector2(0.05f, 0.05f), Vector2(-1.0f, -1.0f), 2.0f, Vector3(0.0f, 1.0f, 0.0f)},
-    {Vector2(0.9, 0.1), Vector2(0.05f, 0.05f), Vector2(-1.0f, 1.0f), 2.0f, Vector3(0.0f, 0.0f, 1.0f)},
-    {Vector2(0.1, 0.9), Vector2(0.05f, 0.05f), Vector2(1.0f, -1.0f), 2.0f, Vector3(1.0f, 1.0f, 0.0f)}
+    {Vector2(0.1, 0.1), Vector2(0.05f, 0.05f), Vector2(1.0f, 1.0f), 3.0f, Vector3(1.0f, 0.0f, 0.0f)},
+    {Vector2(0.9, 0.9), Vector2(0.05f, 0.05f), Vector2(-1.0f, -1.0f), 3.0f, Vector3(0.0f, 1.0f, 0.0f)},
+    {Vector2(0.9, 0.1), Vector2(0.05f, 0.05f), Vector2(-1.0f, 1.0f), 3.0f, Vector3(0.0f, 0.0f, 1.0f)},
+    {Vector2(0.1, 0.9), Vector2(0.05f, 0.05f), Vector2(1.0f, -1.0f), 3.0f, Vector3(1.0f, 1.0f, 0.0f)}
 };
-*/
 /*
 const Emitter emitters[1] = {
     {Vector2(0.5, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0f, 1.0f), 2.0f, Vector3(0.8f, 0.8f, 0.8f)}
 };
 */
+/*
 const Emitter emitters[3] = {
-    {Vector2(0.25, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0f, 1.0f), 2.0f, Vector3(1.0f, 1.0f, 0.0f)},
-    {Vector2(0.5, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0f, 1.0f), 2.0f, Vector3(0.0f, 1.0f, 1.0f)},
-    {Vector2(0.75, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0f, 1.0f), 2.0f, Vector3(1.0f, 0.0f, 1.0f)}
+    {Vector2(0.25, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0f, 1.0f), 7.0f, Vector3(1.0f, 1.0f, 0.0f)},
+    {Vector2(0.5, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0f, 1.0f), 7.0f, Vector3(0.0f, 1.0f, 1.0f)},
+    {Vector2(0.75, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0f, 1.0f), 7.0f, Vector3(1.0f, 0.0f, 1.0f)}
 };
-
+*/
 /*
 const Emitter emitters[4] = {
     {Vector2(0.25, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0, 1.0f), 1.0f, Vector3(1.0f, 0.0f, 0.0f)},
@@ -208,16 +208,14 @@ void Fluid2::fluidAdvection(const float dt)
             for (int j = 0; j < velocityX.getSize().y; j++) {
                 Vector2 pos = grid.getFacePosX(Index2(i, j));
 
-                float vx;
-                float vy;
+                float vx = velX[Index2(i, j)];
 
-                if (i > 0) {
-                    vx = (velX[Index2(i, j)] + velX[Index2(i - 1, j)]) * 0.5f;
-                } else {
-                    vx = velX[Index2(i, j)];
-                }
+                int i_y = clamp(i, 0, velocityY.getSize().x - 1);
+                int j_y = j;
+                int iminus1_y = clamp(i - 1, 0, velocityY.getSize().x - 1);
+                int jminus1_y = clamp(j - 1, 0, velocityY.getSize().y - 1);
 
-                vy = (velY[Index2(i, j)] + velY[Index2(i, j + 1)]) * 0.5f;
+                float vy = bilerp(velY[Index2(i_y, j_y)], velY[Index2(iminus1_y, j_y)], velY[Index2(i_y, jminus1_y)], velY[Index2(iminus1_y, jminus1_y)], 0.5, 0.5);
 
                 Vector2 vel = Vector2(vx, vy);
 
@@ -225,18 +223,16 @@ void Fluid2::fluidAdvection(const float dt)
                 Vector2 k1 = vel * dt;
                 Vector2 pRK = pos - k1 * 0.5f;
 
-                Vector2 k2 =
-                    Vector2(biLerp(velocityX, grid.getFaceIndexX(pRK)), biLerp(velocityY, grid.getFaceIndexX(pRK))) *
+                Vector2 k2 = Vector2(biLerp(velX, grid.getFaceIndexX(pRK)), biLerp(velY, grid.getFaceIndexX(pRK))) *
                     dt;
                 pRK = pos - k2 * 0.5f;
 
-                Vector2 k3 =
-                    Vector2(biLerp(velocityX, grid.getFaceIndexX(pRK)), biLerp(velocityY, grid.getFaceIndexX(pRK))) *
+                Vector2 k3 = Vector2(biLerp(velX, grid.getFaceIndexX(pRK)), biLerp(velY, grid.getFaceIndexX(pRK))) *
                     dt;
                 pRK = pos - k3;
 
                 Vector2 k4 =
-                    Vector2(biLerp(velocityX, grid.getFaceIndexX(pRK)), biLerp(velocityY, grid.getFaceIndexX(pRK))) *
+                    Vector2(biLerp(velocityX, grid.getFaceIndexX(pRK)), biLerp(velY, grid.getFaceIndexX(pRK))) *
                     dt;
 
                 pos -= (k1 + 2 * k2 + 2 * k3 + k4) / 6.0f;
@@ -247,10 +243,11 @@ void Fluid2::fluidAdvection(const float dt)
                 {
                     pos -= subtep * vel;
 
-                    Vector2 ssIJ = grid.getFaceIndexX(pos);
+                    Vector2 ssIJ_x = grid.getFaceIndexX(pos);
+                    Vector2 ssIJ_y = grid.getFaceIndexY(pos);
 
-                    float vx = biLerp(velX_copy, ssIJ);
-                    float vy = biLerp(velY_copy, ssIJ);
+                    float vx = biLerp(velX, ssIJ_x);
+                    float vy = biLerp(velY, ssIJ_y);
 
                     vel = Vector2(vx, vy);
                 }
@@ -273,38 +270,31 @@ void Fluid2::fluidAdvection(const float dt)
             for (int j = 0; j < velocityY.getSize().y; j++) {
                 Vector2 pos = grid.getFacePosY(Index2(i, j));
                 
-                float vx;
-                float vy;
+                float vy =  velY[Index2(i,j)];
 
-                if (j > 0) {
-                    vy = (velY[Index2(i, j)] + velY[Index2(i, j - 1)]) * 0.5f;
-                } else {
-                    vy = velY[Index2(i, j)];
-                }
+                int i_x = i;
+                int j_x = clamp(j, 0, velocityX.getSize().y - 1);
+                int iminus1_x = clamp(i - 1, 0, velocityX.getSize().x - 1);
+                int jminus1_x = clamp(j - 1, 0, velocityX.getSize().y - 1);
 
+                float vx = bilerp(velX[Index2(i_x, j_x)], velX[Index2(iminus1_x, j_x)], velX[Index2(i_x, jminus1_x)], velX[Index2(iminus1_x, jminus1_x)], 0.5, 0.5);
                 
-                vx = (velX[Index2(i, j)] + velX[Index2(i + 1, j)]) * 0.5f;
-
                 Vector2 vel = Vector2(vx, vy);
-
 
                 // RK - 4
 #ifdef RUNGE_KUTTA_4
                 Vector2 k1 = vel * dt;
                 Vector2 pRK = pos - k1 * 0.5f;
 
-                Vector2 k2 =
-                    Vector2(biLerp(velocityX, grid.getFaceIndexY(pRK)), biLerp(velocityY, grid.getFaceIndexY(pRK))) *
+                Vector2 k2 = Vector2(biLerp(velX, grid.getFaceIndexY(pRK)), biLerp(velY, grid.getFaceIndexY(pRK))) *
                     dt;
                 pRK = pos - k2 * 0.5f;
 
-                Vector2 k3 =
-                    Vector2(biLerp(velocityX, grid.getFaceIndexY(pRK)), biLerp(velocityY, grid.getFaceIndexY(pRK))) *
+                Vector2 k3 = Vector2(biLerp(velX, grid.getFaceIndexY(pRK)), biLerp(velY, grid.getFaceIndexY(pRK))) *
                     dt;
                 pRK = pos - k3;
 
-                Vector2 k4 =
-                    Vector2(biLerp(velocityX, grid.getFaceIndexY(pRK)), biLerp(velocityY, grid.getFaceIndexY(pRK))) *
+                Vector2 k4 = Vector2(biLerp(velX, grid.getFaceIndexY(pRK)), biLerp(velY, grid.getFaceIndexY(pRK))) *
                     dt;
 
                 pos -= (k1 + 2 * k2 + 2 * k3 + k4) / 6.0f;
@@ -314,10 +304,13 @@ void Fluid2::fluidAdvection(const float dt)
 				{
 					pos -= subtep * vel;
 
-					Vector2 ssIJ = grid.getFaceIndexY(pos);
+					Vector2 ssIJ_x = grid.getFaceIndexX(pos);
+                    Vector2 ssIJ_y = grid.getFaceIndexY(pos);
 
-					float vx = biLerp(velX_copy, ssIJ);
-					float vy = biLerp(velY_copy, ssIJ);
+                    float vx = biLerp(velX, ssIJ_x);
+                    float vy = biLerp(velY, ssIJ_y);
+
+                    vel = Vector2(vx, vy);
 
 					vel = Vector2(vx, vy);
 				}
@@ -392,10 +385,14 @@ void Fluid2::fluidEmission()
         float pos = 0.5f;
         float size = 0.05f;
 
-        float angle = std::fmod(time * 0.2, 2 * M_PI);
+        float angle = std::fmod(time * 2, 2 * M_PI);
 
-        float velX = std::cos(angle) * 2;
-        float velY = std::sin(angle) * 2;
+        float angleB = std::fmod(time * 16, 2 * M_PI);
+
+        float velmag = (std::sin(angleB) + 1) * 5;
+
+        float velX = std::cos(angle) * velmag;
+        float velY = std::sin(angle) * velmag;
 
         Vector3 color = calculateTimeBasedColor(time);
 
@@ -427,8 +424,8 @@ void Fluid2::fluidEmission()
 void Fluid2::fluidVolumeForces(const float dt)
 {
     
-    if (Scene::testcase >= Scene::SMOKE) 
-    //if (false)
+    //if (Scene::testcase >= Scene::SMOKE) 
+    if (false)
     {
         const float gravity = Scene::kGravity;
 
@@ -492,7 +489,6 @@ void Fluid2::fluidVolumeForces(const float dt)
 void Fluid2::fluidViscosity(const float dt)
 {
     if (Scene::testcase >= Scene::SMOKE)
-    // if (false)
     {
         const Array2<float> Vx_temp = Array2<float>(velocityX);
         const Array2<float> Vy_temp = Array2<float>(velocityY);
@@ -505,44 +501,10 @@ void Fluid2::fluidViscosity(const float dt)
         const float dx2 = dx * dx;
         const float dy2 = dy * dy;
         const float mu_dt_over_rho = mu *(dt / rho);
-        /*
-                #pragma omp parallel for collapse(2)
-                for (int j = 0; j < grid.getSize().y; ++j) {
-                    for (int i = 0; i < grid.getSize().x; ++i) {
-                        uint iPlus1_x = min(i + 1, static_cast<int>(Vx_temp.getSize().x) - 1);
-                        uint iMinus1_x = max(i - 1, 0);
 
-                        uint jPlus1_y = min(j + 1, static_cast<int>(Vy_temp.getSize().y) - 1);
-                        uint jMinus1_y = max(j - 1, 0);
-
-                        float laplacianVx =
-                            (Vx_temp[Index2(iPlus1_x, j)] - 2 * Vx_temp[Index2(i, j)] + Vx_temp[Index2(iMinus1_x, j)]) /
-           dx2; float laplacianVy = (Vy_temp[Index2(i, jPlus1_y)] - 2 * Vy_temp[Index2(i, j)] + Vy_temp[Index2(i,
-           jMinus1_y)]) / dy2;
-
-                        // Actualiza las velocidades en el grid original basado en el término de difusión y los
-           gradientes velocityX[Index2(i, j)] += dt_over_rho * mu * laplacianVx; velocityY[Index2(i, j)] += dt_over_rho
-           * mu * laplacianVy;
-                    }
-                }
-
-                #pragma omp parallel for
-                for (int j = 0; j < velocityX.getSize().y; ++j)
-                {
-                                Index2 index = Index2(velocityX.getSize().x - 1, j);
-                                float laplacianVx = (Vx_temp[Index2(velocityX.getSize().x - 2, j)] - 2 * Vx_temp[index])
-           / dx2; velocityX[index] += dt_over_rho * mu * laplacianVx;
-                }
-
-                #pragma omp parallel for
-                for (int i = 0; i < velocityY.getSize().x; ++i) {
-                    Index2 index = Index2(i, velocityY.getSize().y - 1);
-                    float laplacianVy = (Vy_temp[Index2(i, velocityY.getSize().y - 2)] - 2 * Vy_temp[index]) / dy2;
-                    velocityY[index] += dt_over_rho * mu * laplacianVy;
-                }
-            }
-                    */
+        // Apply viscosity to velocityX
         {
+            #pragma omp parallel for
             for (int i = 0; i < velocityX.getSize().x; i++) {
                 for (int j = 0; j < velocityX.getSize().y; j++) {
                     uint iPlus1_x = min(i + 1, static_cast<int>(Vx_temp.getSize().x) - 1);
@@ -559,7 +521,9 @@ void Fluid2::fluidViscosity(const float dt)
             }
         }
 
+        // Apply viscosity to velocityY
         {
+            #pragma omp parallel for
             for (int i = 0; i < velocityY.getSize().x; i++) {
                 for (int j = 0; j < velocityY.getSize().y; j++) {
 					uint iPlus1_x = min(i + 1, static_cast<int>(Vy_temp.getSize().x) - 1);
@@ -711,8 +675,8 @@ void Fluid2::fluidPressureProjection(const float dt)
                 if (j < nY - 1)
                     A.add_to_element(idx, idx + nX, -1.0 / dy2);
 
-                // Establecer el valor del elemento diagonal principal
-                A.set_element(idx, idx, value);
+                // Establecer el valor del elemento diagonal principal + un pequeño epsilon para aumentar la estabilidad
+                A.set_element(idx, idx, value + EPSILON);
             }
         }
         
