@@ -27,25 +27,24 @@ struct Emitter
 
 const uint NUM_SUBSTEPS = 10;
 const double EPSILON = 1e-6;
-
+/*
 const Emitter emitters[4] = {
     {Vector2(0.1, 0.1), Vector2(0.05f, 0.05f), Vector2(1.0f, 1.0f), 3.0f, Vector3(1.0f, 0.0f, 0.0f)},
     {Vector2(0.9, 0.9), Vector2(0.05f, 0.05f), Vector2(-1.0f, -1.0f), 3.0f, Vector3(0.0f, 1.0f, 0.0f)},
     {Vector2(0.9, 0.1), Vector2(0.05f, 0.05f), Vector2(-1.0f, 1.0f), 3.0f, Vector3(0.0f, 0.0f, 1.0f)},
     {Vector2(0.1, 0.9), Vector2(0.05f, 0.05f), Vector2(1.0f, -1.0f), 3.0f, Vector3(1.0f, 1.0f, 0.0f)}
 };
+*/
 /*
 const Emitter emitters[1] = {
     {Vector2(0.5, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0f, 1.0f), 2.0f, Vector3(0.8f, 0.8f, 0.8f)}
 };
 */
-/*
 const Emitter emitters[3] = {
     {Vector2(0.25, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0f, 1.0f), 7.0f, Vector3(1.0f, 1.0f, 0.0f)},
     {Vector2(0.5, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0f, 1.0f), 7.0f, Vector3(0.0f, 1.0f, 1.0f)},
     {Vector2(0.75, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0f, 1.0f), 7.0f, Vector3(1.0f, 0.0f, 1.0f)}
 };
-*/
 /*
 const Emitter emitters[4] = {
     {Vector2(0.25, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0, 1.0f), 1.0f, Vector3(1.0f, 0.0f, 0.0f)},
@@ -424,8 +423,8 @@ void Fluid2::fluidEmission()
 void Fluid2::fluidVolumeForces(const float dt)
 {
     
-    //if (Scene::testcase >= Scene::SMOKE) 
-    if (false)
+    if (Scene::testcase >= Scene::SMOKE) 
+    //if (false)
     {
         const float gravity = Scene::kGravity;
 
@@ -602,6 +601,7 @@ void Fluid2::fluidPressureProjection(const float dt)
                 double v = (velocityY[Index2(i, j + 1)] - velocityY[Index2(i, j)]) / dy;
                 
                 b[idx] = (-rho / dt) * (u + v);
+                //b[idx] = -alpha + (u + v);
             }
         }
 
@@ -659,6 +659,7 @@ void Fluid2::fluidPressureProjection(const float dt)
         for (int j = 0; j < nY; ++j) {
             for (int i = 0; i < nX; ++i) {
                 int idx = i + j * nX;
+
                 double value = 2.0 / dx2 + 2.0 / dy2;
 
                 // Aplicar modificaciones de valor para bordes
@@ -712,14 +713,15 @@ void Fluid2::fluidPressureProjection(const float dt)
         }
 
         // Aplicmamos los gradientes de presi?n para corregir todas las velocidades X e Y
-       #pragma omp parallel for collapse(2)
-        for (int j = 0; j < velocityY.getSize().y; ++j) {
-            for (int i = 0; i < velocityX.getSize().x; ++i) {
-                // Aplicamos el gradiente de presión
-                velocityX[Index2(i, j)] -= (dt / rho) * ((pressure[Index2(i, j)] - pressure[Index2(i - 1, j)]) / dx);
-                velocityY[Index2(i, j)] -= (dt / rho) * ((pressure[Index2(i, j)] - pressure[Index2(i, j - 1)]) / dy);
-            }
-        }
+        
+        #pragma omp parallel for collapse(2)
+        for (int j = 0; j < grid.getSize().y; ++j) {
+            for (int i = 0; i < grid.getSize().x; ++i) {
+				// Aplicamos el gradiente de presión
+				velocityX[Index2(i + 1, j)] -= (dt / rho) * ((pressure[Index2(i + 1, j)] - pressure[Index2(i, j)]) / dx);
+				velocityY[Index2(i, j + 1)] -= (dt / rho) * ((pressure[Index2(i, j + 1)] - pressure[Index2(i, j)]) / dy);
+			}
+		}
     }
 }
 
