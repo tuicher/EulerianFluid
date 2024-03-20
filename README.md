@@ -1,7 +1,6 @@
 # Eulerian Fluid
-
 <div align="center">
-<img src="https://github.com/tuicher/EulerianFluid/assets/26395726/3c96b56e-e85c-45d9-b889-6008975642da" width="400">
+<img src="https://github.com/tuicher/EulerianFluid/assets/26395726/9c171e66-be9e-4e1a-a529-cede93fbcfb8" width="400">
 </div>
 
 <div align="center">
@@ -9,7 +8,7 @@
 </div>
 
 <div align="center">
-<img src="https://github.com/tuicher/EulerianFluid/assets/26395726/9c171e66-be9e-4e1a-a529-cede93fbcfb8" width="400">
+<img src="https://github.com/tuicher/EulerianFluid/assets/26395726/3c96b56e-e85c-45d9-b889-6008975642da" width="400">
 </div>
 
 <div align="center">
