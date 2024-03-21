@@ -7,8 +7,8 @@ namespace asa
 {
 int Scene::testcase = Scene::SMOKE;
 bool Scene::pauseFlag = true;
-uint Scene::nCellsX = 150;
-uint Scene::nCellsY = 150;
+uint Scene::nCellsX = 200;
+uint Scene::nCellsY = 200;
 float Scene::step = 0.01f;
 float Scene::kDensity =1.0f;
 float Scene::kGravity = -1.0f;

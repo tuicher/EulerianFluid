@@ -3,8 +3,6 @@
 
 #include "Index2.h"
 
-#define CLAMP_TO_EDGE
-
 namespace asa
 {
 template <class T>
@@ -44,17 +42,7 @@ public:
 
     const T *getData() const { return ptr; }
 
-    // Creamos la funcion max y min para poder usarla en la funcion getLinearIndex
-    inline const uint min(const uint a, const uint b) const { return a < b ? a : b; }
-    inline const uint max(const uint a, const uint b) const { return a > b ? a : b; }
-
-    #ifdef CLAMP_TO_EDGE
-    // Version de getLinearIndex modificada para que no se salga del array clampeando al borde
-    inline const uint getLinearIndex(const uint i, const uint j) const { return min( size.x * size.y, max( 0, j * size.x + i)); }
-    #else
-    // Version de getLinearIndex modificada para que no se salga del array 
-    inline const uint getLinearIndex(const uint i, const uint j) const { return (j * size.x + i) % (size.x * size.y); }
-    #endif
+    inline const uint getLinearIndex(const uint i, const uint j) const { return j * size.x + i; }
 
     bool resize(const Index2 &size_)
     {

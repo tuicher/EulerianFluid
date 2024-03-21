@@ -498,6 +498,7 @@ void Fluid2::fluidPressureProjection(const float dt)
         const float dy = grid.getDx().y;
         const float dx2 = dx * dx;
         const float dy2 = dy * dy;
+        const float dt_over_rho = dt / rho;
 
         const int nX = pressure.getSize().x;
         const int nY = pressure.getSize().y;
@@ -602,14 +603,20 @@ void Fluid2::fluidPressureProjection(const float dt)
                 pressure[Index2(i, j)] = p[idx];
             }
         }
-        // Aplicamos el gradiente de presión
-        #pragma omp parallel for collapse(2)
-        for (int j = 0; j < grid.getSize().y; ++j) {
-            for (int i = 0; i < grid.getSize().x; ++i) {
-				velocityX[Index2(i + 1, j)] -= (dt / rho) * ((pressure[Index2(i + 1, j)] - pressure[Index2(i, j)]) / dx);
-				velocityY[Index2(i, j + 1)] -= (dt / rho) * ((pressure[Index2(i, j + 1)] - pressure[Index2(i, j)]) / dy);
-			}
-		}
+
+        for (size_t i = 1; i < velocityX.getSize().x - 1; i++) {
+            for (size_t j = 0; j < velocityX.getSize().y; j++) {
+                velocityX[Index2(i, j)] +=
+                    -dt_over_rho * (pressure[Index2(i, j)] - pressure[Index2(i - 1, j)]) / dx;
+            }
+        }
+
+        for (size_t i = 0; i < velocityY.getSize().x; i++) {
+            for (size_t j = 1; j < velocityY.getSize().y - 1; j++) {
+                velocityY[Index2(i, j)] +=
+                    -dt_over_rho * (pressure[Index2(i, j)] - pressure[Index2(i, j - 1)]) / dy;
+            }
+        }
     }
 }
 
