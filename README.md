@@ -12,5 +12,16 @@
 </div>
 
 <div align="center">
-<img src="https://github.com/tuicher/EulerianFluid/assets/26395726/e7c9c904-34c6-44ca-b14a-a1f2ed35be26" width="400">
+  <table>
+    <tr>
+      <th>Substeps</th>
+      <th>RK-4</th>
+      <th>Euler</th>
+    </tr>
+    <tr>
+      <td><img src="https://github.com/tuicher/EulerianFluid/assets/26395726/b4a581b7-572b-4611-acf8-4c6513a6d742" width="240"></td>
+      <td><img src="https://github.com/tuicher/EulerianFluid/assets/26395726/d16ca4ac-5e7e-4b9a-9de7-86e5a8bec854" width="240"></td>
+      <td><img src="https://github.com/tuicher/EulerianFluid/assets/26395726/fe960720-c7b1-4677-b424-3c84ad22a75c" width="240"></td>
+    </tr>
+  </table>
 </div>
