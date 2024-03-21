@@ -20,40 +20,83 @@ struct Emitter
     Vector3 color;
 };
 
-#define RGB_PATTERN
+#define SMOKE_DISPENSER
+
+#define DEMO_1
+//#define DEMO_2
+//#define DEMO_3
+
 
 #define SUB_STEPS
 //#define RUNGE_KUTTA_4
 
 const uint NUM_SUBSTEPS = 10;
 const double EPSILON = 1e-6;
+
+#ifndef SMOKE_DISPENSER
+#ifdef DEMO_1
 const Emitter emitters[4] = {
     {Vector2(0.1, 0.1), Vector2(0.05f, 0.05f), Vector2(1.0f, 1.0f), 3.0f, Vector3(1.0f, 0.0f, 0.0f)},
     {Vector2(0.9, 0.9), Vector2(0.05f, 0.05f), Vector2(-1.0f, -1.0f), 3.0f, Vector3(0.0f, 1.0f, 0.0f)},
     {Vector2(0.9, 0.1), Vector2(0.05f, 0.05f), Vector2(-1.0f, 1.0f), 3.0f, Vector3(0.0f, 0.0f, 1.0f)},
     {Vector2(0.1, 0.9), Vector2(0.05f, 0.05f), Vector2(1.0f, -1.0f), 3.0f, Vector3(1.0f, 1.0f, 0.0f)}
 };
-/*
+#else // DEMO_1
+#ifdef DEMO_2
 const Emitter emitters[1] = {
     {Vector2(0.5, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0f, 1.0f), 2.0f, Vector3(0.8f, 0.8f, 0.8f)}
 };
-*/
-/*
+
+#else // DEMO_2
+#ifdef DEMO_3
 const Emitter emitters[3] = {
     {Vector2(0.25, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0f, 1.0f), 3.0f, Vector3(1.0f, 1.0f, 0.0f)},
     {Vector2(0.5, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0f, 1.0f), 3.0f, Vector3(0.0f, 1.0f, 1.0f)},
     {Vector2(0.75, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0f, 1.0f), 3.0f, Vector3(1.0f, 0.0f, 1.0f)}
 };
 
-
+#else // DEMO_3
 const Emitter emitters[4] = {
     {Vector2(0.25, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0, 1.0f), 2.0f, Vector3(1.0f, 0.0f, 0.0f)},
     {Vector2(0.75, 0.9), Vector2(0.05f, 0.05f), Vector2(0.0, -1.0f), 2.0f, Vector3(0.0f, 1.0f, 0.0f)},
     {Vector2(0.75, 0.1), Vector2(0.05f, 0.05f), Vector2(0.0, 1.0f), 2.0f, Vector3(0.0f, 0.0f, 1.0f)},
     {Vector2(0.25, 0.9), Vector2(0.05f, 0.05f), Vector2(0.0f, -1.0f), 2.0f, Vector3(1.0f, 1.0f, 0.0f)}};
-*/
+#endif // DEMO_3
+#endif // DEMO_2
+#endif  // DEMO_1
+#endif  // !SMOKE_DISPENSER
 
 const Vector2 gDir = Vector2(0, 1);
+
+double time = 0.0;
+
+Vector3 colors[] = {
+    Vector3(1.0f, 1.0f, 0.5f),
+    Vector3(0.8f, 0.2f, 0.7f),
+    Vector3(1.0f, 0.7f, 1.0f),
+    Vector3(0.2f, 1.0f, 0.9f),
+    Vector3(0.8f, 1.0f, 0.2f),
+    Vector3(0.4f, 0.9f, 1.0f),
+    Vector3(1.0f, 1.0f, 1.0f),
+    Vector3(1.0f, 1.0f, 0.5f)  //(para volver al inicio)
+};
+
+Vector3 calculateTimeBasedColor(double time)
+{
+    int numColors = sizeof(colors) / sizeof(colors[0]);
+    float cycleTime = 15.0f;  // Tiempo en segundos para completar un ciclo RGB completo
+    float fraction = std::fmod(time / cycleTime, 1.0f) * (numColors - 1);
+    int startIndex = static_cast<int>(fraction);
+    int endIndex = (startIndex + 1) % numColors;
+    float lerpFactor = fraction - startIndex;
+
+    Vector3 StartColor = colors[startIndex];
+    Vector3 EndColor = colors[endIndex];
+
+    return Vector3(StartColor.x + (EndColor.x - StartColor.x) * lerpFactor,
+                   StartColor.y + (EndColor.y - StartColor.y) * lerpFactor,
+                   StartColor.z + (EndColor.z - StartColor.z) * lerpFactor);
+}
 
 template <typename T>
 T biLerp(const Array2<T> &data, const Vector2 &posIJ)
@@ -78,65 +121,12 @@ T biLerp(const Array2<T> &data, const Vector2 &posIJ)
     return bottomLeft * (1 - s) * (1 - t) + bottomRight * s * (1 - t) + topLeft * (1 - s) * t + topRight * s * t;
 }
 
-Vector2 getVelocityAt(const Array2<float> &dataX, const Array2<float> &dataY, const Index2 &ij)
-{
-    // Getting the 4 indexes
-    const uint x0 = clamp(ij.x, 0, dataX.getSize().x - 1);
-    const uint x1 = clamp(ij.x + 1, 0, dataX.getSize().x - 1);
-    const uint y0 = clamp(ij.y, 0, dataX.getSize().y - 1);
-    const uint y1 = clamp(ij.y + 1, 0, dataX.getSize().y - 1);
-
-    // Setting the weights
-    const float s = 0.5f;
-    const float t = 0.5f;
-
-    // getting the 4 values
-    float const bottomLeftX = dataX.getValue(x0, y0);
-    float const bottomRightX = dataX.getValue(x1, y0);
-    float const topLeftX = dataX.getValue(x0, y1);
-    float const topRightX = dataX.getValue(x1, y1);
-
-    float const bottomLeftY = dataY.getValue(x0, y0);
-    float const bottomRightY = dataY.getValue(x1, y0);
-    float const topLeftY = dataY.getValue(x0, y1);
-    float const topRightY = dataY.getValue(x1, y1);
-
-    // returning the bilinear interpolation
-    return Vector2(
-        bottomLeftX * (1 - s) * (1 - t) + bottomRightX * s * (1 - t) + topLeftX * (1 - s) * t + topRightX * s * t,
-        bottomLeftY * (1 - s) * (1 - t) + bottomRightY * s * (1 - t) + topLeftY * (1 - s) * t + topRightY * s * t);
-}
-
-Vector2 lerpVelocity(const Array2<float> &dataX, const Array2<float> &dataY, const Vector2 &posIJ)
-{
-    	// Getting the 4 indexes
-	const uint x0 = clamp(floor(posIJ.x), 0, dataX.getSize().x - 1);
-	const uint x1 = clamp(x0 + 1, 0, dataX.getSize().x - 1);
-	const uint y0 = clamp(floor(posIJ.y), 0, dataX.getSize().y - 1);
-	const uint y1 = clamp(y0 + 1, 0, dataX.getSize().y - 1);
-
-	// Setting the weights
-	const float s = clamp(posIJ.x - x0 , 0.0f, 1.0f);
-    const float t = clamp(posIJ.y - y0, 0.0f, 1.0f);
-
-    Vector2 const bottomLeft = getVelocityAt(dataX, dataY, Index2(x0,y0));
-    Vector2 const bottomRight = getVelocityAt(dataX, dataY, Index2(x1,y0));
-    Vector2 const topLeft = getVelocityAt(dataX, dataY, Index2(x0,y1));
-    Vector2 const topRight = getVelocityAt(dataX, dataY, Index2(x1,y1));
-
-	// returning the bilinear interpolation
-    return bottomLeft * (1 - s) * (1 - t) + bottomRight * s * (1 - t) + topLeft * (1 - s) * t + topRight * s * t;
-}
-
 } // namespace
-// advection
 void Fluid2::fluidAdvection(const float dt)
 {
     const float subtep = dt / NUM_SUBSTEPS;
 
     {
-        // Ink advecion HERE
-
         Array2<Vector3> ink_copy = Array2<Vector3>(this->getInk());
 
         // Recorrer todas las celdas
@@ -186,10 +176,9 @@ void Fluid2::fluidAdvection(const float dt)
 
 #else // EULER
                 pos -= dt * vel;
-#endif// 
-#endif  
-                // const auto ijprev = grid get ij(xprev)
-                Vector2 ijprev = grid.getCellIndex(pos);
+#endif // RUNGE_KUTTA_4 
+#endif // SUB_STEPS
+                const Vector2 ijprev = grid.getCellIndex(pos);
 
                 Vector3 interpolated_ink = biLerp(ink_copy, ijprev);
 
@@ -327,40 +316,11 @@ void Fluid2::fluidAdvection(const float dt)
     }
 }
 
-double time = 0.0;
-Vector3 colors[] = {
-    Vector3(1.0f, 1.0f, 0.5f),  
-    Vector3(0.8f, 0.2f, 0.7f),  
-    Vector3(1.0f, 0.7f, 1.0f),
-    Vector3(0.2f, 1.0f, 0.9f),
-    Vector3(0.8f, 1.0f, 0.2f),
-    Vector3(0.4f, 0.9f, 1.0f),
-    Vector3(1.0f, 1.0f, 1.0f),
-    Vector3(1.0f, 1.0f, 0.5f)   //(para volver al inicio)
-};
-
-Vector3 calculateTimeBasedColor(double time)
-{
-    int numColors = sizeof(colors) / sizeof(colors[0]);
-    float cycleTime = 15.0f;  // Tiempo en segundos para completar un ciclo RGB completo
-    float fraction = std::fmod(time / cycleTime, 1.0f) * (numColors - 1);
-    int startIndex = static_cast<int>(fraction);
-    int endIndex = (startIndex + 1) % numColors;
-    float lerpFactor = fraction - startIndex;
-
-    Vector3 StartColor = colors[startIndex];
-    Vector3 EndColor = colors[endIndex];
-
-    return Vector3(StartColor.x + (EndColor.x - StartColor.x) * lerpFactor,
-                   StartColor.y + (EndColor.y - StartColor.y) * lerpFactor,
-                   StartColor.z + (EndColor.z - StartColor.z) * lerpFactor);
-}
-
 void Fluid2::fluidEmission()
 {
     if (Scene::testcase >= Scene::SMOKE)
     {
-#ifndef RGB_PATTERN
+#ifndef SMOKE_DISPENSER
         // Por cada uno de los emisores y fuerzo una velocidad concreta y una tinta.
         for (const auto& emitter : emitters)
         {
@@ -384,26 +344,21 @@ void Fluid2::fluidEmission()
 			}
 		}   
  #else
-        
         float pos = 0.5f;
         float size = 0.05f;
-
         float angle = std::fmod(time * 0.5f, 2 * M_PI);
+        float anglePulse = std::fmod(time * 16, 2 * M_PI);
 
-        float angleB = std::fmod(time * 16, 2 * M_PI);
-
-        //float velmag = (std::sin(angleB) + 1) * 5;
-
-        float velmag = std::sin(angleB) * 10;
-
-        //float velX = std::cos(angle) * velmag;
-        //float velY = std::sin(angle) * velmag;
-
+#ifdef DEMO_1
+        float velmag = (std::sin(anglePulse) + 1) * 5;
+        float velX = std::cos(angle) * velmag;
+        float velY = std::sin(angle) * velmag;
+#else
+        float velmag = std::sin(anglePulse) * 10.0f;
         float velX = 1.0f * velmag;
         float velY = 0.0f;
-
+#endif  // DEMO_1
         Vector3 color = calculateTimeBasedColor(time);
-
 
         #pragma omp parallel for collapse(2)
         for (int j = 0; j < inkRGB.getSize().y; ++j) {
@@ -424,7 +379,7 @@ void Fluid2::fluidEmission()
         }
 
         time += Scene::step;
-#endif  //  RGB_PATTERN
+#endif  //  SMOKE_DISPENSER
 
     }
 }
@@ -433,20 +388,44 @@ void Fluid2::fluidVolumeForces(const float dt)
 {
     
     if (Scene::testcase >= Scene::SMOKE) 
-    //if (false)
     {
         const float gravity = Scene::kGravity;
 
-        for (int i = 0; i < velocityY.getSize().x; i++) {
-            for (int j = 0; j < velocityY.getSize().y; j++) {
-				Index2 index = Index2(i, j);
-				float vel = velocityY[index];
+        #pragma omp parallel for collapse(2)
+        for (int j = 0; j < grid.getSize().y; ++j) {
+            for (int i = 0; i < grid.getSize().x; ++i) {
+                Index2 index = Index2(i, j);
+                Vector2 vel = Vector2(velocityX[index], velocityY[index]);
 
-				// Gravity
-				vel += gravity * dt;
-				velocityY[index] = vel;
-			}
-		}
+                // Gravity
+                vel += gDir * gravity * dt;
+
+                velocityX[index] = vel.x;
+                velocityY[index] = vel.y;
+            }
+        }
+
+        // Faltaría aplicar la fuerza en las posiciones velX[velX.x -1, j] y velY[i, velY.y -1]
+
+        #pragma omp parallel for
+        for (int j = 0; j < velocityX.getSize().y; ++j) {
+            Index2 index = Index2(velocityX.getSize().x - 1, j);
+            float vel = velocityX[index];
+
+            vel = vel + gDir.x * gravity * dt;
+
+            velocityX[index] = vel;
+        }
+
+        #pragma omp parallel for
+        for (int i = 0; i < velocityY.getSize().x; ++i) {
+            Index2 index = Index2(i, velocityY.getSize().y - 1);
+            float vel = velocityY[index];
+
+            vel = vel + gDir.y * gravity * dt;
+
+            velocityY[index] = vel;
+        }
     }
     
 }
@@ -455,10 +434,11 @@ void Fluid2::fluidViscosity(const float dt)
 {
     if (Scene::testcase >= Scene::SMOKE)
     {
+        // Copy the velocity fields on temporary arrays
         const Array2<float> Vx_temp = Array2<float>(velocityX);
         const Array2<float> Vy_temp = Array2<float>(velocityY);
 
-        // Precalc
+        // Precalculate some constants
         const float rho = Scene::kDensity;
         const float mu = Scene::kViscosity;
         const float dx = grid.getDx().x;
@@ -512,7 +492,6 @@ void Fluid2::fluidPressureProjection(const float dt)
     if (Scene::testcase >= Scene::SMOKE) 
     {
         // Precalculate some constants
-
         const float rho = Scene::kDensity;
         const float mu = Scene::kViscosity;
         const float dx = grid.getDx().x;
@@ -531,9 +510,9 @@ void Fluid2::fluidPressureProjection(const float dt)
         // Matriz A
         SparseMatrix<double> A(size, 5);
 
-        // Calcular el vector de incognitas [del mismo tamaño]
-        std::vector<double> x;
-        x.resize(size, 0.0);
+        // Vector de incognitas [del mismo tamaño]
+        std::vector<double> p;
+        p.resize(size, 0.0);
         
         // Forzar que todas las velocidades de 
         #pragma omp parallel for
@@ -600,7 +579,7 @@ void Fluid2::fluidPressureProjection(const float dt)
         {
             for (int i = 0; i < nX; ++i) 
             {
-                x[i + j * nX] = pressure[Index2(i, j)];
+                p[i + j * nX] = pressure[Index2(i, j)];
             }
         }
        
@@ -611,7 +590,7 @@ void Fluid2::fluidPressureProjection(const float dt)
 
         double residual = 1e-4;
         int iterations = 100;
-        PCG.solve(A, b, x, residual, iterations);
+        PCG.solve(A, b, p, residual, iterations);
 
         // Rellenamos pressure con el resultado de montar el escena
         #pragma omp parallel for collapse(2)
@@ -620,7 +599,7 @@ void Fluid2::fluidPressureProjection(const float dt)
                 // indice Lineal de A
                 int idx = i + j * nX;
 
-                pressure[Index2(i, j)] = x[idx];
+                pressure[Index2(i, j)] = p[idx];
             }
         }
         // Aplicamos el gradiente de presión
